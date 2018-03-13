@@ -1,14 +1,14 @@
 
 # GraphQL API Server Base
 
-A GraphQL API server base to get started with building GraphQL API's.
+A GraphQL server base to get started with building GraphQL API's.
 
 ## Install
 
 ```sh
-git clone https://github.com/reactioncommerce/reaction-api-base.git
+git clone https://github.com/jshimko/graphql-api-base.git
 
-cd reaction-api-base
+cd graphql-api-base
 
 yarn
 ```
@@ -61,7 +61,7 @@ Or better yet, let Docker build a lean production image for you in one command..
 ```sh
 .docker/build.sh
 
-# reactioncommerce/reaction-api-base:latest
+# docker run -d -p 3000:3000 graphql-api:latest
 ```
 
 **Development Build**
@@ -69,7 +69,7 @@ Or better yet, let Docker build a lean production image for you in one command..
 ```sh
 .docker/build.sh --dev
 
-# reactioncommerce/reaction-api-base:devel
+# docker run -d -p 3000:3000 graphql-api:devel
 ```
 
 If you are doing test builds regularly in development, you can use the development Docker build to speed your builds up.  It caches all of the dependencies on the first run and only needs to reinstall them if the `package.json` or `yarn.lock` changes.  After the first run, subsequent builds usually take less than 10 seconds because the only step that needs to happen is the Babel transpile.
