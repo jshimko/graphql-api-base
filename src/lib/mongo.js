@@ -1,5 +1,4 @@
 import DataLoader from 'dataloader';
-import findByIds from 'mongo-find-by-ids';
 import pluralize from 'pluralize';
 
 export default class MongoCollection {
@@ -17,15 +16,25 @@ export default class MongoCollection {
     this.context = context;
     this.pubsub = context.pubsub;
     this.collection = context.db.collection(type);
-    this.loader = new DataLoader((ids) => findByIds(this.collection, ids));
+    this.loader = new DataLoader((ids) => this._findByIds(this.collection, ids));
   }
 
-  async insertOne(doc) {
+  _findByIds(collection, ids) {
+    return collection.find({ _id: { $in: ids } })
+      .toArray()
+      .then((docs) => {
+        const idMap = {};
+        docs.forEach((d) => { idMap[d._id] = d; });
+        return ids.map((id) => idMap[id]);
+      });
+  }
+
+  async insertOne(doc, options) {
     const docToInsert = Object.assign({}, doc, {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
-    const id = (await this.collection.insertOne(docToInsert)).insertedId;
+    const id = (await this.collection.insertOne(docToInsert, options)).insertedId;
     this.pubsub.publish(
       `${this.typeSingular}Created`,
       { [`${this.typeSingular}Created`]: await this.findOneById(id) }
@@ -33,7 +42,7 @@ export default class MongoCollection {
     return id;
   }
 
-  async insertMany(docs) {
+  async insertMany(docs, options) {
     const docsToInsert = [];
     docs.forEach((doc) => {
       docsToInsert.push(Object.assign({}, doc, {
@@ -41,7 +50,7 @@ export default class MongoCollection {
         updatedAt: new Date().toISOString()
       }));
     });
-    const ids = (await this.collection.insertMany(docsToInsert)).insertedIds;
+    const ids = (await this.collection.insertMany(docsToInsert, options)).insertedIds;
     this.findManyById(ids);
     ids.forEach(async (id) => {
       this.pubsub.publish(
@@ -52,27 +61,33 @@ export default class MongoCollection {
     return ids;
   }
 
-  async updateOne(query, updates) {
-    const result = await this.collection.findOneAndUpdate(query, {
+  async updateOne(filter, updates, options) {
+    const result = await this.collection.findOneAndUpdate(filter, {
       $set: Object.assign({}, updates, {
         updatedAt: new Date().toISOString()
       })
-    });
-    this.loader.clear(result.value._id);
+    }, options);
+    let id;
+    if (!result.value && result.lastErrorObject.upserted) {
+      id = result.lastErrorObject.upserted;
+    } else {
+      id = result.value._id;
+    }
+    this.loader.clear(id);
     this.pubsub.publish(
       `${this.typeSingular}Updated`,
-      { [`${this.typeSingular}Updated`]: await this.findOneById(result.value._id) }
+      { [`${this.typeSingular}Updated`]: await this.findOneById(id) }
     );
-    return result;
+    return id;
   }
 
-  async updateMany(query, updates) {
-    const docs = await this.find(query, { fields: { _id: 1 } });
-    const result = await this.collection.updateMany(query, {
+  async updateMany(filter, updates, options) {
+    const docs = await this.find(filter, { fields: { _id: 1 } });
+    const result = await this.collection.updateMany(filter, {
       $set: Object.assign({}, updates, {
         updatedAt: new Date().toISOString()
       })
-    });
+    }, options);
     this.loader.clearAll();
     const ids = docs.map((d) => d._id);
     this.findManyById(ids);
@@ -85,12 +100,12 @@ export default class MongoCollection {
     return result;
   }
 
-  async updateById(_id, updates) {
+  async updateById(_id, updates, options) {
     const result = await this.collection.updateOne({ _id }, {
       $set: Object.assign({}, updates, {
         updatedAt: new Date().toISOString()
       })
-    });
+    }, options);
     this.loader.clear(_id);
     this.pubsub.publish(
       `${this.typeSingular}Updated`,
@@ -132,17 +147,21 @@ export default class MongoCollection {
     return result;
   }
 
-  find(query = {}, options = { limit: 50, skip: 0, sort: { createdAt: 1 } }) {
-    const { limit, skip, sort } = options;
-    return this.collection.find(query).limit(limit).skip(skip).sort(sort).toArray();
+  find(filter = {}, options = {}) {
+    let { limit, skip, sort } = options;
+    limit = limit || 100;
+    skip = skip || 0;
+    sort = sort || { createdAt: 1 };
+
+    return this.collection.find(filter).limit(limit).skip(skip).sort(sort).toArray();
   }
 
-  findOne(query = {}, options = {}) {
-    if (typeof query === 'string' || query && query._id) {
-      const _id = typeof query === 'string' ? query : query._id;
+  findOne(filter = {}, options = {}) {
+    if (typeof filter === 'string' || filter && filter._id) {
+      const _id = typeof filter === 'string' ? filter : filter._id;
       return this.findOneById(_id);
     }
-    return this.collection.findOne(query, options);
+    return this.collection.findOne(filter, options);
   }
 
   findOneById(id) {
