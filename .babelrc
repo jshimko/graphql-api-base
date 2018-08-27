@@ -1,14 +1,14 @@
 {
   "plugins": [
-    "lodash",
-    ["transform-runtime", {
+    "lodash", [
+      "transform-runtime", {
       "helpers": false,
       "polyfill": false,
-      "regenerator": true,
+      "regenerator": true
     }]
   ],
   "presets": [
-    "es2015",
+    "env",
     "stage-2"
   ]
 }
