@@ -1,19 +1,23 @@
 import fs from 'fs';
 import _ from 'lodash';
-import { makeExecutableSchema } from 'graphql-tools';
 import { PubSub } from 'graphql-subscriptions';
 import MongoCollection from './mongo';
-import models from '../models';
 import schemas from '../schemas';
 import resolvers from '../resolvers';
-import startServer from '../server/start';
+import directiveResolvers from '../resolvers/_directives';
+import GraphqlToMongodb from '../resolvers/schema-directives/graphqlToMongodb';
+import Email from '../server/email';
+import startServer from '../server/server';
+import { Logger } from '../server/logger';
 
 export const pubsub = new PubSub();
 
-export default {
-  models,
+const API = {
+  Collections: {},
+  models: {},
   schemas,
   resolvers,
+  directiveResolvers,
   context: { pubsub },
   pubsub,
 
@@ -33,7 +37,7 @@ export default {
 
   createCollection(name, options = {}, collection = MongoCollection) {
     if (!name) {
-      throw new TypeError('Model name is required');
+      throw new TypeError('Model name string is required for "createCollection"');
     }
     if (typeof options.schema === 'string') {
       this.addSchema(options.schema);
@@ -59,11 +63,24 @@ export default {
     return _.merge(this.context, obj);
   },
 
-  getExecutableSchema() {
-    return makeExecutableSchema({
+  getApolloServerConfig() {
+    return {
       typeDefs: this.schemas,
-      resolvers: this.resolvers
-    });
+      resolvers: this.resolvers,
+      context: this.context,
+      directiveResolvers: this.directiveResolvers,
+      schemaDirectives: {
+        graphqlToMongodb: GraphqlToMongodb
+      },
+      playground: false,
+      introspection: true,
+      cors: false,
+      debug: process.env.NODE_ENV !== 'production',
+      formatError(error) {
+        Logger.error(error.message);
+        return error;
+      }
+    };
   },
 
   loadSchemas() {
@@ -80,8 +97,11 @@ export default {
     Object.keys(this.models).forEach((name) => {
       const model = this.models[name];
       const restOfOpts = _.omit(model.options, ['schema', 'resolvers']);
-      newContext[name] = new model.collection(name.toLowerCase(), restOfOpts, newContext);
+      this.Collections[name] = new model.collection(name, restOfOpts, newContext);
     });
-    return newContext;
+    this.context = { ...newContext, ...this.Collections, Email, Logger };
+    return this.context;
   }
 };
+
+export default API;

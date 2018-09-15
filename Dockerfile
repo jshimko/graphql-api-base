@@ -1,17 +1,32 @@
+FROM node:8-alpine as builder
+
+MAINTAINER Jeremy Shimko <jeremy.shimko@gmail.com>
+
+RUN apk update && apk add --no-cache build-base python
+RUN npm i -g node-gyp
+
+WORKDIR /opt/api
+
+COPY package.json .
+COPY package-lock.json .
+RUN npm install
+
+COPY .babelrc .
+COPY src src
+
+RUN npm run build
+RUN npm prune --production
+
+
 FROM node:8-alpine
-MAINTAINER Jeremy Shimko <jeremy@reactioncommerce.com>
 
-ENV APP_SOURCE_DIR /opt/src
+WORKDIR /opt/api
 
-WORKDIR $APP_SOURCE_DIR
-
-COPY . $APP_SOURCE_DIR
-
-RUN $APP_SOURCE_DIR/.docker/scripts/install.sh && \
-    $APP_SOURCE_DIR/.docker/scripts/cleanup.sh
+COPY --from=builder /opt/api .
 
 ENV NODE_ENV production
 
-EXPOSE 3000
+EXPOSE 4000
 
-CMD ["node", "dist/index.js"]
+# Start node server
+CMD ["node", "dist/main.js"]

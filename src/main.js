@@ -1,26 +1,34 @@
 import fs from 'fs';
 import path from 'path';
 import API from './lib/api';
+import * as models from './models';
 import { Logger } from './server/logger';
+import { onStartup } from './server/startup';
 
-if (process.env.NODE_ENV !== 'production') {
-  // load the .env file in development (if exists)
-  require('dotenv').load();
-}
+import UserResolvers from './resolvers/Users';
+import EmailsResolvers from './resolvers/Emails';
+import ImagesResolvers from './resolvers/Images';
+import SettingsResolvers from './resolvers/Settings';
+
+// register all collections
+API.createCollection('Users', { resolvers: UserResolvers }, models.Users);
+API.createCollection('Emails', { resolvers: EmailsResolvers });
+API.createCollection('Images', { resolvers: ImagesResolvers });
+API.createCollection('Settings', { resolvers: SettingsResolvers }, models.Settings);
 
 // get the db/app configs from the env
 const {
-  PORT = 3000,
+  PORT = 4000,
   MONGO_PORT = parseInt(PORT, 10) + 1,
   MONGO_DATABASE = 'api',
   MONGO_URL
 } = process.env;
 
 // set the development database location
-const dbpath = path.join('../', 'db');
+const dbpath = path.join('./', '.db');
 
 function startApp() {
-  API.startServer().catch((e) => Logger.error(e, 'Server startup error'));
+  API.startServer().then(onStartup).catch((e) => Logger.error(e, 'Server startup error'));
 }
 
 // start a local development database if no MONGO_URL provided
@@ -54,6 +62,7 @@ if (!MONGO_URL) {
     }
   });
 } else {
+  Logger.info(`Connecting to MongoDB at: ${MONGO_URL}`);
   startApp();
 }
 
@@ -74,4 +83,3 @@ process.once('exit', function () {
     nodemon.emit('SIGINT');
   }
 });
-
