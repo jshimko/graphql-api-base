@@ -85,6 +85,7 @@
     "dot-notation": [2, { // http://eslint.org/docs/rules/dot-notation
       "allowKeywords": true
     }],
+    "no-undef": 2,
     "eqeqeq": 2, // http://eslint.org/docs/rules/eqeqeq
     "guard-for-in": 2, // http://eslint.org/docs/rules/guard-for-in
     "no-caller": 2, // http://eslint.org/docs/rules/no-caller
@@ -147,6 +148,7 @@
     "eol-last": 2, // http://eslint.org/docs/rules/eol-last
     "func-names": 0, // http://eslint.org/docs/rules/func-names
     "func-style": [2, "declaration", { "allowArrowFunctions": true }], // http://eslint.org/docs/rules/func-style
+    "arrow-parens": 2, // https://eslint.org/docs/rules/arrow-parens
     "key-spacing": [2, { // http://eslint.org/docs/rules/key-spacing
       "beforeColon": false,
       "afterColon": true

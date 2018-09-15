@@ -1,9 +1,8 @@
+
+.db
 .git
-
-db
 dist
-docker/*.dockerfile
+docs
 node_modules
-
-Dockerfile
-docker-compose.yml
+*.md
+.env

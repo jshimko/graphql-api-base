@@ -1,5 +1,12 @@
 .env
-.git
-db
+.mongify/mongo
+.mongify/mysql
+.db
+chart/*.values.yaml
 dist
+dump
 node_modules
+
+*.sql
+
+*.bak
