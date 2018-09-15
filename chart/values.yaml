@@ -1,0 +1,137 @@
+
+image: yourname/graphql-api
+imageTag: latest
+imagePullPolicy: IfNotPresent
+
+## How many replicas?
+replicas: 1
+
+## Should the service be LoadBalancer, NodePort or ClusterIP
+## If you're using ingress, ClusterIP should be a solid choice
+##
+serviceType: ClusterIP
+
+## Name value of an image pull secret
+imagePullSecret:
+
+## If you want to have ingress deployed, set these variables
+## ingress.class will allow you to indicate what ingress controller should handle your request, if needed
+## A separate ingress controller might be desirable due to ssh mapping.
+ingress:
+  enabled: true
+  hostname: example.com
+  # annotations:
+  #   kubernetes.io/ingress.class: "nginx"
+  #   kubernetes.io/ingress.provider: "nginx"
+  #   kubernetes.io/tls-acme: "true"
+  #   ingress.kubernetes.io/affinity: "cookie"
+  #   ingress.kubernetes.io/session-cookie-name: "route"
+  #   ingress.kubernetes.io/session-cookie-hash: "sha1"
+  #   ingress.kubernetes.io/proxy-read-timeout: 3600
+  #   ingress.kubernetes.io/proxy-send-timeout: 3600
+  #   ingress.kubernetes.io/ssl-redirect: "true"
+  #   ingress.kubernetes.io/use-http2: "true"
+
+## What port is the app running on internally
+## What port should the app look like its running within the cluster
+service:
+  apiPort: 3000
+  publicPort: 80
+
+app:
+  envVars:
+  - key: "ROOT_URL"
+    value: "https://example.com"
+  - key: "JWT_SECRET"
+    value: "set me!"
+
+  # - key: "REDIS_URL"
+  #   value: "redis://vc-api-node-redis.vcanera.svc.cluster.local:6379"
+  # - key: "MONGO_URL"
+  #   value: "mongodb://mymongo.com:27017/dbname"
+  # - key: "SENDGRID_API_KEY"
+  #   value: "your Sendgrid API key"
+
+  # - key: "GOOGLE_CREDENTIALS_JSON"
+  #   value: ''
+  # - key: "GOOGLE_CLOUD_PROJECT_ID"
+  #   value: ""
+  # - key: "GOOGLE_CLOUD_STORAGE_BUCKET"
+  #   value: ""
+
+  # - key: "IMGIX_DOMAIN"
+  #   value: ""
+  # - key: "IMGIX_URL"
+  #   value: ""
+
+# Specify a separate Helm deployment name of MongoDB
+mongo:
+  # deploymentName: vc-api-mongo
+  port: 27017
+  replicaSet: rs0
+
+
+redis:
+  image: redis:4.0.10-alpine
+
+  persistence:
+    enabled: true
+    size: 5Gi
+    accessMode: ReadWriteOnce
+    # storageClass:
+
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 500m
+    limits:
+      memory: 1Gi
+      cpu: 1
+
+  # Configure Node affinity and taint tolerations for pods
+  scheduling:
+    affinity:
+      node:
+        type: requiredDuringSchedulingIgnoredDuringExecution
+        labels:
+        # - key: example.com/app
+        #   operator: In
+        #   values: ["mylabel.io"]
+    tolerations:
+    # - key: mylabel.io/dedicated
+    #   value: mylabel-core
+    #   effect: NoSchedule
+
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+resources:
+  requests:
+    memory: "500Mi"
+    cpu: "700m"
+  limits:
+    memory: "1536Mi"
+    cpu: "1500m"
+
+scheduling:
+  affinity:
+    node:
+      type: requiredDuringSchedulingIgnoredDuringExecution
+      labels:
+#      - key: iamalabelkey
+#        operator: In
+#        values: ["value1", "value2"]
+  tolerations:
+#  - key: iamataintkey
+#    value: taintvalue
+#    effect: NoSchedule
+
+networkPolicy:
+  ingress:
+#    enabled: true
+#    namespaceLabels:
+#      - key: tenant
+#        value: customer1
+#    podLabels:
+#      - key: app
+#        value: frontend

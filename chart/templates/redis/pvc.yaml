@@ -1,0 +1,20 @@
+{{- if .Values.redis.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "redis.fullname" . }}-storage
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  accessModes:
+    - {{ default "ReadWriteOnce" .Values.redis.persistence.accessMode | quote }}
+  {{- if .Values.redis.persistence.storageClass }}
+  storageClassName: {{ .Values.redis.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ default "5Gi" .Values.redis.persistence.size }}
+{{- end }}

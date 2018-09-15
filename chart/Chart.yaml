@@ -1,0 +1,11 @@
+name: graphql-api
+version: 1.0.0
+description: A Helm chart for Node.js apps
+keywords:
+- node
+home: https://github.com/jshimko/chart-node
+sources:
+- https://github.com/jshimko/chart-node
+maintainers:
+- name: Jeremy Shimko
+  email: jeremy.shimko@gmail.com

@@ -1,0 +1,87 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "redis.fullname" . }}
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: {{ template "redis.fullname" . }}
+        app: {{ template "fullname" . }}
+    spec:
+      containers:
+      - name: redis
+        image: {{ .Values.redis.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: redis
+          containerPort: 6379
+        volumeMounts:
+        - mountPath: /var/lib/redis
+          name: data
+          subPath: redis
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+
+        # resource requests/limits
+        resources:
+          requests:
+            memory: {{ .Values.redis.resources.requests.memory }}
+            cpu: {{ .Values.redis.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.redis.resources.limits.memory }}
+            cpu: {{ .Values.redis.resources.limits.cpu }}
+
+      # Node affinity and tolerations
+      {{- if .Values.redis.scheduling.affinity }}
+      {{- if .Values.redis.scheduling.affinity.node }}
+      {{- if .Values.redis.scheduling.affinity.node.labels }}
+      affinity:
+        nodeAffinity:
+          {{ .Values.redis.scheduling.affinity.node.type }}:
+            nodeSelectorTerms:
+            - matchExpressions:
+                {{- range .Values.redis.scheduling.affinity.node.labels }}
+                - key: {{ .key }}
+                  operator: {{ .operator }}
+                  values:
+                  {{- range .values }}
+                  - {{ . }}
+                  {{- end }}
+                {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
+
+      {{- if .Values.redis.scheduling.tolerations }}
+      tolerations:
+      {{- range .Values.redis.scheduling.tolerations }}
+      - key: {{ .key }}
+        value: {{ .value }}
+        operator: Equal
+        effect: {{ .effect }}
+      {{- end }}
+      {{- end }}
+
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ if .Values.redis.persistence.enabled }} {{ template "redis.fullname" . }}-storage {{ else }} {{ template "fullname" . }}-storage {{ end }}
