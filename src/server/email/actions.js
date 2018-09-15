@@ -4,20 +4,27 @@ import sendgrid from '@sendgrid/mail';
 import Queue from 'bull';
 import Handlebars from 'handlebars';
 import htmlToText from 'html-to-text';
+import formatDate from 'date-fns/format';
+import { formatPrice } from '../../lib/utils';
 import { Logger } from '../logger';
 import API from '../../lib/api';
+import { idKeysToObjectID } from '../../lib/utils';
 
 // setup any required partials for layout, header, footer, etc.
-Handlebars.registerPartial('styles', getTemplate('layouts/partials/styles'));
-Handlebars.registerPartial('Logo', getTemplate('layouts/partials/logo'));
-Handlebars.registerPartial('Footer', getTemplate('layouts/partials/footer'));
+// Handlebars.registerPartial('Styles', getTemplate('layouts/partials/styles'));
+// Handlebars.registerPartial('Logo', getTemplate('layouts/partials/logo'));
+// Handlebars.registerPartial('Footer', getTemplate('layouts/partials/footer'));
+
+// Helpers
+Handlebars.registerHelper('formatDate', (date, format) => formatDate(date, format));
+Handlebars.registerHelper('formatPrice', (amount) => formatPrice(amount || 0));
 
 // job queue instance for email sending
 const emailQueue = new Queue('sendEmail', process.env.REDIS_URL || 'redis://localhost:6379');
 
 // process email jobs
 emailQueue.process((job, done) => {
-  const { from, to, subject, text, html, type, template } = job.data;
+  const { from, to, subject, text, html, type, template, ...rest } = job.data;
 
   if (!from || !to || !subject || !html) {
     const msg = 'Email job requires an options object with to/from/subject/html.';
@@ -25,9 +32,7 @@ emailQueue.process((job, done) => {
     return done(new Error(msg));
   }
 
-  const { Emails } = API.Collections;
-
-  Emails.updateOne({ jobId: job.id }, {
+  const emailDoc = idKeysToObjectID({
     from,
     to,
     subject,
@@ -35,10 +40,13 @@ emailQueue.process((job, done) => {
     html,
     type,
     template,
+    ...rest,
     status: 'processing'
-  }, {
-    upsert: true
   });
+
+  const { Emails } = API.Collections;
+
+  Emails.updateOne({ jobId: job.id }, emailDoc, { upsert: true });
 
   const apiKey = process.env.SENDGRID_API_KEY;
 
