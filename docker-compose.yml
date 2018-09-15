@@ -1,15 +1,38 @@
+version: "3.6"
 
-api:
-  image: reactioncommerce/reaction-api-base:latest
-  ports:
-    - 3000:3000
-  links:
-    - mongo
-  environment:
-    MONGO_URL: "mongodb://mongo:27017/api"
+services:
+  api:
+    build: ./
+    image: graphql-api
+    depends_on:
+      - mongo
+      - redis
+    links:
+      - mongo
+      - redis
+    ports:
+      - 4000:4000
+    environment:
+      ROOT_URL: http://localhost:4000
+      MONGO_URL: mongodb://mongo:27017/api
+      PORT: 4000
 
-mongo:
-  image: mongo:latest
-  ports:
-    - 27017:27017  
-  command: mongod --storageEngine=wiredTiger
+  mongo:
+    image: mongo:3.6
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-data:/data/db
+    command: mongod --bind_ip_all
+
+  redis:
+    image: redis:4-alpine
+    ports:
+      - 6379:6379
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mongo-data:
+  redis-data:
