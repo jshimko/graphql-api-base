@@ -14,14 +14,14 @@ function parseJSONLiteral(ast) {
       return parseFloat(ast.value);
     case Kind.OBJECT: {
       const value = Object.create(null);
-      ast.fields.forEach(field => {
+      ast.fields.forEach((field) => {
         value[field.name.value] = parseJSONLiteral(field.value);
       });
 
       return value;
     }
     case Kind.LIST:
-      return ast.values.map(parseLiteral);
+      return ast.values.map(parseJSONLiteral);
     default:
       return null;
   }

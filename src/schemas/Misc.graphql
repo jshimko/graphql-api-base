@@ -1,0 +1,9 @@
+
+type SuccessResult {
+  result: Boolean
+}
+
+type RemoveResult {
+  n: Int
+  ok: Int
+}

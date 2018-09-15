@@ -1,0 +1,44 @@
+type Email {
+  _id: ObjID!
+  to: String!
+  from: String!
+  subject: String!
+  text: String
+  html: String
+  template: String
+  userId: ObjID
+  createdAt: DateTime!
+  createdBy: ObjID
+  createdByUser: User
+  updatedAt: DateTime!
+  updatedBy: ObjID
+  updatedByUser: User
+}
+
+extend type Query {
+  emails(userId: ObjID): [Email!] @hasRole(roles: ["admin"])
+  email(_id: ObjID): Email @hasRole(roles: ["admin"])
+}
+
+input EmailInput {
+  to: String!
+  from: String!
+  subject: String!
+  text: String
+  html: String
+  template: String
+  userId: ObjID
+}
+
+extend type Mutation {
+  sendEmail(input: EmailInput!): SuccessResult @hasRole(roles: ["admin"])
+  createEmail(input: EmailInput!): Email @hasRole(roles: ["admin"])
+  updateEmail(_id: ObjID!, input: EmailInput!): Email @hasRole(roles: ["admin"])
+  removeEmail(_id: ObjID!): Boolean @hasRole(roles: ["admin"])
+}
+
+extend type Subscription {
+  emailCreated(_id: ObjID): Email @hasRole(roles: ["admin"])
+  emailUpdated(_id: ObjID): Email @hasRole(roles: ["admin"])
+  emailRemoved(_id: ObjID): ObjID @hasRole(roles: ["admin"])
+}

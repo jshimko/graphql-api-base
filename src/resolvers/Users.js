@@ -1,20 +1,42 @@
+import bcrypt from 'bcrypt';
+import jwt from 'jwt-simple';
 import { withFilter } from 'graphql-subscriptions';
 import { pubsub } from '../lib/api';
+import Hooks from '../lib/hooks';
+import { Logger } from '../server/logger';
 
 const resolvers = {
   Query: {
-    async users(root, { limit, skip, sort }, { Users }) {
-      return Users.find({ limit, skip, sort });
+    users(root, args, { Users }) {
+      return Users.find(args);
     },
 
     user(root, { _id }, { Users }) {
       return Users.findOneById(_id);
     },
-    currentUser(root, args, { Users, userId }) {
-      return Users.findOneById(userId);
+
+    currentUser(root, args, { userId, Users }) {
+      return Users.findOne({ _id: userId });
     }
   },
   Mutation: {
+    async loginWithPassword(root, { email, password }, { Users }) {
+      const user = await Users.findOne({ email: email.toLowerCase() });
+
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        const msg = 'User not found matching email/password combination';
+        Logger.warn({ email, password }, msg);
+        throw new Error(msg);
+      }
+
+      Hooks.run('onLogin', user);
+
+      const payload = { userId: user._id.toString() };
+      const token = jwt.encode(payload, process.env.JWT_SECRET_KEY);
+
+      return { token };
+    },
+
     async createUser(root, { input }, { Users }) {
       const _id = await Users.insertOne(input);
       return Users.findOneById(_id);
@@ -25,8 +47,15 @@ const resolvers = {
       return Users.findOneById(_id);
     },
 
-    removeUser(root, { _id }, { Users }) {
-      return Users.removeById(_id);
+    async removeUser(root, { _id }, { Users }) {
+      let op;
+      try {
+        op = await Users.removeById(_id);
+      } catch (error) {
+        throw error;
+      }
+
+      return op.result;
     }
   },
   Subscription: {

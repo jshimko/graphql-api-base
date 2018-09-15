@@ -1,0 +1,65 @@
+type Image {
+  _id: ObjID!
+  category: String
+  filename: String
+  mimetype: String
+  order: Int
+  path: String
+  productId: ObjID
+  productType: String
+  storage: String!
+  storageUrl: String!
+  url: String!
+  createdAt: DateTime!
+  createdBy: ObjID
+  createdByUser: User
+  updatedAt: DateTime!
+  updatedBy: ObjID
+  updatedByUser: User  
+}
+
+extend type Query {
+  images(productId: ObjID): [Image!]
+  image(_id: ObjID): Image
+}
+
+input ImageInput {
+  category: String
+  filename: String
+  mimetype: String
+  order: Int
+  path: String
+  productId: ObjID
+  productType: String
+  storage: String
+  storageUrl: String
+  url: String
+}
+
+input ImagesInput {
+  _id: ObjID!
+  category: String
+  filename: String
+  mimetype: String
+  order: Int
+  path: String
+  productId: ObjID
+  productType: String
+  storage: String
+  storageUrl: String
+  url: String
+}
+
+extend type Mutation {
+  createImage(input: ImageInput!): Image @hasRole(roles: ["admin"])
+  uploadImage(file: Upload!, input: ImageInput): Image @hasRole(roles: ["admin"])
+  updateImage(_id: ObjID!, input: ImageInput!): Image @hasRole(roles: ["admin"])
+  updateImages(input: [ImagesInput!]!): [Image] @hasRole(roles: ["admin"])
+  removeImage(_id: ObjID!): RemoveResult @hasRole(roles: ["admin"])
+}
+
+extend type Subscription {
+  imageCreated(_id: ObjID): Image @hasRole(roles: ["admin"])
+  imageUpdated(_id: ObjID): Image @hasRole(roles: ["admin"])
+  imageRemoved(_id: ObjID): ObjID @hasRole(roles: ["admin"])
+}

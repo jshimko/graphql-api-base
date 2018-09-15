@@ -1,0 +1,4 @@
+directive @isAuthenticated on FIELD | FIELD_DEFINITION
+directive @hasRole(roles: [String]) on FIELD | FIELD_DEFINITION
+directive @isAdminOrOwner on FIELD | FIELD_DEFINITION
+directive @graphqlToMongodb(type: String) on FIELD | FIELD_DEFINITION

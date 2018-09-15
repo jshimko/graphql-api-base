@@ -1,0 +1,27 @@
+type Setting {
+  _id: ObjID!
+  key: String!
+  value: String!
+  createdAt: DateTime!
+  createdBy: ObjID
+  createdByUser: User
+  updatedAt: DateTime!
+  updatedBy: ObjID
+  updatedByUser: User  
+}
+
+extend type Query {
+  settings: [Setting!] @hasRole(roles: ["admin"])
+  setting(_id: ObjID, key: String): Setting @hasRole(roles: ["admin"])
+}
+
+extend type Mutation {
+  setSetting(key: String!, value: String!): Setting @hasRole(roles: ["admin"])
+  unsetSetting(_id: ObjID, key: String): RemoveResult @hasRole(roles: ["admin"])
+}
+
+extend type Subscription {
+  settingCreated(_id: ObjID, key: String): Setting @hasRole(roles: ["admin"])
+  settingUpdated(_id: ObjID, key: String): Setting @hasRole(roles: ["admin"])
+  settingRemoved(_id: ObjID, key: String): ObjID @hasRole(roles: ["admin"])
+}

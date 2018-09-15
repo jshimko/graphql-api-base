@@ -1,41 +1,53 @@
 type User {
   _id: ObjID!
   email: String!
-  emails: [UserEmail]
-  username: String
+  password: String!
+  firstName: String
+  lastName: String
+  phone: String
   roles: [String]
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
-type UserEmail {
-  address: String!
-  verified: Boolean!
-}
-
 type Query {
-  users(limit: Int, skip: Int, sort: JSON): [User!]
-  user(_id: ObjID!): User
+  users(limit: Int, skip: Int, sort: JSON): [User!] @hasRole(roles: ["admin"])
+  user(_id: ObjID!): User @hasRole(roles: ["admin"])
   currentUser: User
 }
 
-input CreateUserInput {
-  email: String!
-  password: String!
+input UserInput {
+  email: String
+  firstName: String
+  lastName: String
+  phone: String
 }
 
-input UpdateUserInput {
-  email: String
+input UserAddressInput {
+  name: String
+  address1: String
+  address2: String
+  city: String
+  state: String
+  zip: String
+  country: String
+  telephone: String
+  isCopy: Boolean
+}
+
+type LoginToken {
+  token: String!
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): User
-  updateUser(_id: ObjID!, input: UpdateUserInput!): User
-  removeUser(_id: ObjID!): Boolean
+  loginWithPassword(email: String!, password: String!): LoginToken
+  createUser(input: UserInput!): User
+  updateUser(_id: ObjID!, input: UserInput!): User @hasRole(roles: ["admin"])
+  removeUser(_id: ObjID!): RemoveResult @hasRole(roles: ["admin"])
 }
 
 type Subscription {
-  userCreated(_id: ObjID): User
-  userUpdated(_id: ObjID): User
-  userRemoved(_id: ObjID): ObjID
+  userCreated(_id: ObjID): User @hasRole(roles: ["admin"])
+  userUpdated(_id: ObjID): User @hasRole(roles: ["admin"])
+  userRemoved(_id: ObjID): ObjID @hasRole(roles: ["admin"])
 }
