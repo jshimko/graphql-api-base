@@ -10,71 +10,79 @@ git clone https://github.com/jshimko/graphql-api-base.git
 
 cd graphql-api-base
 
-yarn
+npm i
 ```
 
 ## Run
 
 ### Development
 
-In development, `mongodb-prebuilt` is used to give you an easy local development database and `nodemon` provides a live reloading Node server that will refresh on any changes to the contents of the `src/` directory.
+In development, Docker is used to give you an easy local development environment with MongoDB (for API data) and Redis (for the job queue). `Nodemon` provides a live reloading Node server that will refresh on any changes to the contents of the `src/` directory.
 
-To start the Mongo and GraphQL API servers:
+To start the Mongo, Redis, and GraphQL API servers:
 
 ```sh
-yarn start
+npm start
 ```
 
 The following services should now be available:
 
-**GraphQL API** - <http://localhost:3000/graphql>
+**GraphQL Playground UI** - <http://localhost:4000>
 
-**GraphiQL UI** - <http://localhost:3000/graphiql>
+**GraphQL API** - <http://localhost:4000/graphql>
 
-**Subscriptions websocket** - <ws://localhost:3000/subscriptions>
+**Subscriptions websocket** - <ws://localhost:4000/subscriptions>
 
-**MongoDB** - <mongodb://localhost:3001>
+**MongoDB** - <mongodb://localhost:27017>
+
+**Redis** - <redis://localhost:6739>
 
 
-### Production
+### Production Builds
 
 To create/run a production build:
 
 ```sh
 # create the build
-yarn run build
+npm run build
 
 # optionally prune dev dependencies
-yarn --prod
+npm prune --production
 
 # start the production server
-# (MONGO_URL required)
-MONGO_URL="mongodb://example.com:27017/db" yarn run serve
+# (MONGO_URL/REDIS_URL required)
+npm run serve
 ```
 
-Or better yet, let Docker build a lean production image for you in one command...
+Or better yet, let Docker build a lean production image for you...
 
-## Docker
-
-**Production Build**
+#### Docker
 
 ```sh
-.docker/build.sh
+# build an image
+docker-compose build
 
-# docker run -d -p 3000:3000 graphql-api:latest
+# run the app, MongoDB, and Redis
+docker-compose up -d
+
+# API available at http://localhost:4000
+# Mongo available at mongodb://localhost:27017
+# Redis available at redis://localhost:6739
 ```
 
-**Development Build**
+#### Kubernetes Deployment
+
+This app comes with a [Helm](https://helm.sh/) chart for easy deployment of the API, MongoDB, and Redis on a Kubernetes cluster.  To do a full production deployment:
 
 ```sh
-.docker/build.sh --dev
+# deploy a MongoDB replica set
+# https://github.com/helm/charts/tree/master/stable/mongodb-replicaset
+helm install --name vc-api-mongo --namespace vcanera stable/mongodb-replicaset
 
-# docker run -d -p 3000:3000 graphql-api:devel
+# deploy the API and Redis
+helm install --name vc-api --namespace vcanera -f ./chart/custom-values.yaml ./chart
 ```
 
-If you are doing test builds regularly in development, you can use the development Docker build to speed your builds up.  It caches all of the dependencies on the first run and only needs to reinstall them if the `package.json` or `yarn.lock` changes.  After the first run, subsequent builds usually take less than 10 seconds because the only step that needs to happen is the Babel transpile.
-
-However, note that while this is technically a production build of the app code, this is NOT a lean Docker build.  All of the dev dependencies and OS build tools remain in the image, so it's usually at least 500MB larger than the lean Docker build above.  This is only intended to give you a way to quickly test that a production build works properly.  You should always use the production Docker build for your final distribution.
 
 ## License
 
