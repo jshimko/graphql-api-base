@@ -18,9 +18,7 @@ if (process.env.NODE_ENV !== 'production') {
 const {
   ROOT_URL = 'http://localhost:4000',
   PORT = 4000,
-  MONGO_PORT = parseInt(PORT, 10) + 1,
-  MONGO_DATABASE = 'api',
-  MONGO_URL = `mongodb://localhost:${MONGO_PORT}/${MONGO_DATABASE}`
+  MONGO_URL
 } = process.env;
 
 export default async function startServer() {

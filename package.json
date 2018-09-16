@@ -65,7 +65,6 @@
     "dotenv": "6.0.0",
     "eslint": "5.5.0",
     "eslint-plugin-babel": "5.2.0",
-    "mongodb-prebuilt": "6.3.6",
     "nodemon": "1.18.4",
     "rimraf": "2.6.2"
   }
