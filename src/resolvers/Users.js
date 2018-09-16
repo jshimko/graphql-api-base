@@ -32,7 +32,7 @@ const resolvers = {
       Hooks.run('onLogin', user);
 
       const payload = { userId: user._id.toString() };
-      const token = jwt.encode(payload, process.env.JWT_SECRET_KEY);
+      const token = jwt.encode(payload, process.env.JWT_SECRET);
 
       return { token };
     },
