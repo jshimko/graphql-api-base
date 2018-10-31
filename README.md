@@ -10,7 +10,7 @@ git clone https://github.com/jshimko/graphql-api-base.git
 
 cd graphql-api-base
 
-npm i
+yarn
 ```
 
 ## Run
@@ -44,14 +44,14 @@ To create/run a production build:
 
 ```sh
 # create the build
-npm run build
+yarn run build
 
 # optionally prune dev dependencies
-npm prune --production
+yarn --production
 
 # start the production server
 # (MONGO_URL/REDIS_URL required)
-npm run serve
+yarn run serve
 ```
 
 Or better yet, let Docker build a lean production image for you...
@@ -77,10 +77,10 @@ This app comes with a [Helm](https://helm.sh/) chart for easy deployment of the 
 ```sh
 # deploy a MongoDB replica set
 # https://github.com/helm/charts/tree/master/stable/mongodb-replicaset
-helm install --name vc-api-mongo --namespace vcanera stable/mongodb-replicaset
+helm install --name graphql-api-mongo --namespace myapp stable/mongodb-replicaset
 
 # deploy the API and Redis
-helm install --name vc-api --namespace vcanera -f ./chart/custom-values.yaml ./chart
+helm install --name graphql-api --namespace myapp -f ./chart/custom-values.yaml ./chart
 ```
 
 

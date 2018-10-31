@@ -1,4 +1,4 @@
-FROM node:8-alpine as builder
+FROM node:10-alpine as builder
 
 MAINTAINER Jeremy Shimko <jeremy.shimko@gmail.com>
 
@@ -8,17 +8,17 @@ RUN npm i -g node-gyp
 WORKDIR /opt/api
 
 COPY package.json .
-COPY package-lock.json .
-RUN npm install
+COPY yarn.lock .
+RUN yarn install
 
 COPY .babelrc .
 COPY src src
 
-RUN npm run build
-RUN npm prune --production
+RUN yarn run build
+RUN yarn --production
 
 
-FROM node:8-alpine
+FROM node:10-alpine
 
 WORKDIR /opt/api
 
