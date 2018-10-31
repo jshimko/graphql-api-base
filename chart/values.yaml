@@ -64,9 +64,9 @@ app:
   # - key: "IMGIX_URL"
   #   value: ""
 
-# Specify a separate Helm deployment name of MongoDB
+# Specify your Helm deployment name of MongoDB
 mongo:
-  # deploymentName: vc-api-mongo
+  deploymentName: graphql-api-mongo
   port: 27017
   replicaSet: rs0
 
