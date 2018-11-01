@@ -12,6 +12,7 @@ COPY yarn.lock .
 RUN yarn install
 
 COPY .babelrc .
+COPY webpack.config.js .
 COPY src src
 
 RUN yarn run build
@@ -29,4 +30,4 @@ ENV NODE_ENV production
 EXPOSE 4000
 
 # Start node server
-CMD ["node", "dist/main.js"]
+CMD ["node", "build/main.js"]

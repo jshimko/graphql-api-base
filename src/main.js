@@ -25,21 +25,3 @@ if (!process.env.MONGO_URL) {
     .then(onStartup)
     .catch((e) => Logger.error(e, 'Server startup error'));
 }
-
-// Ensure stopping our parent process will properly kill nodemon's process
-// https://www.exratione.com/2013/05/die-child-process-die/
-
-// SIGTERM AND SIGINT will trigger the exit event.
-process.once('SIGTERM', function () {
-  process.exit(0);
-});
-process.once('SIGINT', function () {
-  process.exit(0);
-});
-// And the exit event shuts down the child.
-process.once('exit', function () {
-  if (process.env.NODE_ENV !== 'production') {
-    const nodemon = require('nodemon');
-    nodemon.emit('SIGINT');
-  }
-});

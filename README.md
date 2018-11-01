@@ -22,7 +22,7 @@ In development, Docker is used to give you an easy local development environment
 To start the Mongo, Redis, and GraphQL API servers:
 
 ```sh
-npm start
+yarn start
 ```
 
 The following services should now be available:

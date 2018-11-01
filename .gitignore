@@ -1,12 +1,10 @@
-.env
-.mongify/mongo
-.mongify/mysql
 .db
+.env
+*.bak
+*.sql
+build
 chart/*.values.yaml
 dist
 dump
 node_modules
-
-*.sql
-
-*.bak
+src/google.json

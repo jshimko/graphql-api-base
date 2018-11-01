@@ -1,9 +1,3 @@
-import fs from 'fs';
-
-function requireGraphQL(name) {
-  const filename = require.resolve(name);
-  return fs.readFileSync(filename, 'utf8');
-}
 
 const typeDefs = [`
   scalar Date
@@ -13,11 +7,11 @@ const typeDefs = [`
   scalar JSON
 `];
 
-typeDefs.push(requireGraphQL('./_directives.graphql'));
-typeDefs.push(requireGraphQL('./User.graphql'));
-typeDefs.push(requireGraphQL('./Email.graphql'));
-typeDefs.push(requireGraphQL('./Image.graphql'));
-typeDefs.push(requireGraphQL('./Misc.graphql'));
-typeDefs.push(requireGraphQL('./Setting.graphql'));
+typeDefs.push(require('./_directives.graphql'));
+typeDefs.push(require('./User.graphql'));
+typeDefs.push(require('./Email.graphql'));
+typeDefs.push(require('./Image.graphql'));
+typeDefs.push(require('./Misc.graphql'));
+typeDefs.push(require('./Setting.graphql'));
 
 export default typeDefs;

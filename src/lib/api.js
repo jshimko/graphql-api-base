@@ -1,4 +1,3 @@
-import fs from 'fs';
 import _ from 'lodash';
 import { PubSub } from 'graphql-subscriptions';
 import MongoCollection from './mongo';
@@ -24,15 +23,6 @@ const API = {
   startServer() {
     this.loadSchemas();
     return startServer();
-  },
-
-  requireGraphQL(name) {
-    const file = require.resolve(name);
-    try {
-      return fs.readFileSync(file, 'utf8');
-    } catch (e) {
-      throw new Error(`Failed to load schema at path: ${file} \n${e}`);
-    }
   },
 
   createCollection(name, options = {}, collection = MongoCollection) {
