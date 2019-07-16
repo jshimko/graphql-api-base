@@ -12,7 +12,7 @@ import API from '../lib/api';
 
 // load the .env file in development (if exists)
 if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').load();
+  require('dotenv').config();
 }
 
 const {
