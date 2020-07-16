@@ -43,7 +43,7 @@
     "handlebars": "4.1.2",
     "html-to-text": "5.1.1",
     "jwt-simple": "0.5.6",
-    "lodash": "4.17.14",
+    "lodash": "4.17.19",
     "mongodb": "3.2.7",
     "node-loggly-bulk": "2.2.4",
     "nodeify": "1.0.1",
